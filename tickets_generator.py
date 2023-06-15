@@ -39,7 +39,7 @@ ws = wb.active
 
 
 def permission(tickets, type):
-    r = requests.post('https://api.obmeg.com/permission', json={
+    r = requests.post('{base_url}api/permission', json={
         "ticketNumber": tickets,
         "type": types[int(type)-1],
     })
@@ -263,7 +263,7 @@ wb.save(f'{dt_string}/{dt_string}.xlsx')
 if server_sent.upper() == "N":
     print("---------------- i'm done here ----------------")
 else:
-    r = requests.post('https://api.obmeg.com/add', json={
+    r = requests.post('{base_url}api/add', json={
         "code": list
     })
     print(r.json())

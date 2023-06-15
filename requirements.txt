@@ -1,0 +1,5 @@
+qrcode
+Pillow
+openpyxl
+requests
+tqdm

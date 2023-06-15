@@ -10,7 +10,9 @@ import time
 from tqdm import tqdm
 
 list = []
-types = ["Parent", "Student", "Guest", "test"]
+types = ['parent', 'student', 'gest', 'test']
+#base_url = 'https://spotevents.co/'
+base_url = 'http://localhost:3000/'
 
 # to get the time
 
@@ -39,7 +41,7 @@ ws = wb.active
 
 
 def permission(tickets, type, server_sent):
-    r = requests.post('https://api.obmeg.com/permission', json={
+    r = requests.post('{base_url}api/permission', json={
         "ticketNumber": tickets,
         "type": types[int(type)-1],
         "server_sent": server_sent
@@ -235,9 +237,14 @@ wb.save(f'{dt_string}/{dt_string}.xlsx')
 if server_sent.upper() == "N":
     print("---------------- i'm done here ----------------")
 else:
-    r = requests.post('https://api.obmeg.com/add', json={
+    r = requests.post('{base_url}api/insert_tickets', json={
         "code": list
     })
-    print(r.json())
+    print(r)
+    try:
+        print(r.json())
+    except Exception:
+        print("error has been happend")
+        print(r.text)
     print("---------------- i'm done here ----------------")
 k = input("Press Enter to exit")
