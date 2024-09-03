@@ -2,3 +2,6 @@
 __pycache__
 output/
 .venv/
+dist/
+build/
+tickets-generator-v2.spec
