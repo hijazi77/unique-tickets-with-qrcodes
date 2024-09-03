@@ -80,8 +80,9 @@ def chooseImage():
 
 
 def get_events():
-    r = requests.get(f"{base_url}api/superadmin/1/events")
-    return r.json()
+    r = requests.get(f"{base_url}pb/api/collections/events/records")
+    print(r.json().get("items"))
+    return r.json().get("items")
 
 
 def code_text(im, data, change_event):
@@ -155,17 +156,17 @@ while event == "" or event.isnumeric() == False or int(event) > len(events):
 event = events[int(event) - 1]
 print(f"you choosed {event['name']} event")
 print("--------------------------------------------------")
-print(f"qr data: {event['qr']}") if event["qr"] != None else print(
-    "qr data: Empty"
+print(f"qr coordination: {event['qr']}") if event["qr"] != None else print(
+    "qr data: coordination"
 )
-print("text data: " + event["text"]) if event["text"] != None else print(
-    "text data: Empty"
+print("text coordination: " + event["text"]) if event["text"] != None else print(
+    "text data: coordination"
 )
 # ask user if he wants to change the event data
-change_event = input("Do you want to change the event data (Y/N): ")
+change_event = input("Do you want to change the event coordination (Y/N): ")
 while change_event == "" or change_event.upper() not in ["Y", "N"]:
     error("This is not a valid answer")
-    change_event = input("Do you want to change the event data (Y/N): ")
+    change_event = input("Do you want to change the event coordination (Y/N): ")
 if change_event.upper() == "Y":
     change_event = True
 else:
@@ -176,7 +177,7 @@ qr_data = (
 text_data = (
     json.loads(event["text"]) if change_event == False and event["text"] != None else {}
 )
-types = [key for key in json.loads(event["price"]).keys()]
+types = [key for key in event["price"].keys()]
 
 
 im = chooseImage()
@@ -232,10 +233,10 @@ while server_sent == "" or server_sent.upper() not in ["Y", "N"]:
     server_sent = input("Do you want to add a text code (Y/N): ")
 
 # check perrmission to the tickets system
-if permission(tickets, type, server_sent) != 200:
-    error("You are not allowed to access this program at this moment")
-    input("Press enter to exit")
-    quit()
+# if permission(tickets, type, server_sent) != 200:
+#     error("You are not allowed to access this program at this moment")
+#     input("Press enter to exit")
+#     quit()
 
 
 # for the random code
@@ -271,7 +272,7 @@ def generate():
             [
                 pas,
                 types[int(type) - 1],
-                json.loads(event["price"])[types[int(type) - 1]],
+                event["price"][types[int(type) - 1]],
                 event["id"],
             ]
         )

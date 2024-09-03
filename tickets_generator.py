@@ -186,10 +186,10 @@ while tickets == "" or tickets.isnumeric() == False or tickets == 0:
     tickets = input('Enter the number of tickets to generate: ')
 
 # check perrmission to the tickets system
-if permission(tickets, type) != 200:
-    error('You are not allowed to access this program at this moment')
-    input('Press enter to exit')
-    quit()
+# if permission(tickets, type) != 200:
+#     error('You are not allowed to access this program at this moment')
+#     input('Press enter to exit')
+#     quit()
 
 # for the random code
 
