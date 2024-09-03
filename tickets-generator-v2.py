@@ -12,7 +12,7 @@ from tqdm import tqdm
 from upload import upload_tickets
 from autoupdate import check_for_updates
 
-# check_for_updates()
+check_for_updates()
 init()
 
 
