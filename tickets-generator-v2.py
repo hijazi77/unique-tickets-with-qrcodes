@@ -78,7 +78,6 @@ def chooseImage():
 
 def get_events():
     r = requests.get(f"{base_url}api/collections/events/records")
-    print(r.json().get("items"))
     return r.json().get("items")
 
 
@@ -298,6 +297,8 @@ ws["A" + str(1)].value = "TicketNmber"
 ws["B" + str(1)].value = "code"
 ws["C" + str(1)].value = "Type"
 ws["D" + str(1)].value = "Uploaded?"
+ws["E" + str(1)].value = "pb"
+
 
 create_folder(dt_string)
 xlsx_path = f"{dt_string}/{dt_string}.xlsx"

@@ -13,6 +13,7 @@ def update_excel_with_uploaded(tickets, file_path):
     sheet = workbook.active
     for ticket in tickets:
         sheet["D" + str(ticket["rowNumber"])].value = "Uploaded"
+        sheet["E" + str(ticket["rowNumber"])].value = ticket["pb"]
     workbook.save(file_path)
 
 
@@ -36,6 +37,7 @@ def send_ticket(ticket):
         )  # Set timeout
         response.raise_for_status()  # Raise an exception for HTTP errors
         if response.status_code == 200:
+            ticket["pb"] = response.json()["id"]
             return {"success": True, "ticket": ticket}
         else:
             return {"success": False, "ticket": ticket}
