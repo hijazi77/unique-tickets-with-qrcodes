@@ -1,3 +1,4 @@
+import asyncio
 import os
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
@@ -7,12 +8,12 @@ from openpyxl import Workbook
 from datetime import datetime
 import requests
 import time
-import json
 from tqdm import tqdm
+import aiohttp
 
 list = []
-base_url = 'https://spotevents.co/pb/'
-#base_url = "http://localhost:3000/"
+base_url = "https://spotevents.co/pb/"
+# base_url = "http://localhost:3000/"
 
 # to get the time
 
@@ -95,14 +96,14 @@ def code_text(im, data, change_event):
         ticket_needed = False
         text_data["x"] = 0
         text_data["y"] = 0
-        text_data["size"] = 0
+        text_data["size"] = 1
         text_data["color"] = 0
         text_data["ticket_needed"] = ticket_needed
         return text_data
     if ticket_needed.upper() == "Y" and text_data != {} and change_event == False:
         text_data["ticket_needed"] = ticket_needed
         return text_data
-    if ticket_needed.upper() == "Y" and  (change_event == True or text_data == {}):
+    if ticket_needed.upper() == "Y" and (change_event == True or text_data == {}):
         color_options = input("Do you want the color black or white (B/W): ")
         while color_options == "" or color_options.upper() not in ["B", "W"]:
             error("This is not a valid answer")
@@ -144,7 +145,6 @@ def code_text(im, data, change_event):
         return text_data
 
 
-# the serial number of the ticket
 events = get_events()
 print("Choose the event number: ")
 for i in range(len(events)):
@@ -156,11 +156,15 @@ while event == "" or event.isnumeric() == False or int(event) > len(events):
 event = events[int(event) - 1]
 print(f"you choosed {event['name']} event")
 print("--------------------------------------------------")
-print(f"qr coordination: {event['qr']}") if event["qr"] != None else print(
-    "qr coordination: empty"
+(
+    print(f"qr coordination: {event['qr']}")
+    if event["qr"] != None
+    else print("qr coordination: empty")
 )
-print("text coordination: " + event["text"]) if event["text"] != None else print(
-    "text coordination: empty"
+(
+    print(f'text coordination: {event["text"]}')
+    if event["text"] != None
+    else print("text coordination: empty")
 )
 # ask user if he wants to change the event data
 change_event = input("Do you want to change the event coordination (Y/N): ")
@@ -171,12 +175,8 @@ if change_event.upper() == "Y":
     change_event = True
 else:
     change_event = False
-qr_data = (
-    event["qr"] if change_event == False and event["qr"] != None else {}
-)
-text_data = (
-    event["text"] if change_event == False and event["text"] != None else {}
-)
+qr_data = event["qr"] if change_event == False and event["qr"] != None else {}
+text_data = event["text"] if change_event == False and event["text"] != None else {}
 types = [key for key in event["price"].keys()]
 
 
@@ -269,12 +269,12 @@ def generate():
             )  # code
         src.save(f"{dt_string}/{i+1}.jpg")
         list.append(
-            [
-                pas,
-                types[int(type) - 1],
-                event["price"][types[int(type) - 1]],
-                event["id"],
-            ]
+            {
+                "ticket_id": pas,
+                "type": types[int(type) - 1],
+                "price": event["price"][types[int(type) - 1]],
+                "event": event["id"],
+            }
         )
         ws["A" + str(i + 2)].value = i + 1
         ws["B" + str(i + 2)].value = pas
@@ -304,9 +304,35 @@ create_folder(dt_string)
 wb.save(f"{dt_string}/{dt_string}.xlsx")
 
 
+
+def uploadOneTicket(ticket):
+    print(f"Uploading ticket: {ticket}")
+    payload = ticket
+    response =  requests.post(f"{base_url}api/collections/tickets/records", json=payload) 
+    print(response,"response")
+    #check if the ticket was uploaded successfully
+    if response:
+        print("Ticket uploaded successfully")
+        return {"ticket": ticket, "success": True}
+    else:
+        print(f"Failed to upload ticket: {response.status}")
+        return {"ticket": ticket, "status": False}
+
+
+def upload_tickets():
+    tasks = []
+    for ticket in list:
+        res = uploadOneTicket(ticket)
+        if(res.status==False):
+            tasks.append(res)
+            
+
+    # tasks = [uploadOneTicket(ticket) for ticket in list]
+
 if server_sent.upper() == "N":
     print("---------------- i'm done here ----------------")
 else:
+    upload_tickets()
     print("---------------- i'm sending the data to the server ----------------")
     # ask user if he wants to update the event data
     update_event = input("Do you want to update the event coordination (Y/N): ")
@@ -326,7 +352,9 @@ else:
             "Content-Type": "application/json",
         }
         update = requests.patch(
-            f"{base_url}/api/collections/events/records/{event['id']}", json=payload, headers=headers
+            f"{base_url}/api/collections/events/records/{event['id']}",
+            json=payload,
+            headers=headers,
         )
         try:
             print(update.json())
@@ -334,11 +362,10 @@ else:
             print("error has been happend")
             print(update.text)
 
-    r = requests.post(f"{base_url}api/insert_tickets", json={"code": list})
-    try:
-        print(r.json())
-    except Exception:
-        print("error has been happend")
-        print(r.text)
+    # try:
+    #     print(r.json())
+    # except Exception:
+    #     print("error has been happend")
+    #     print(r.text)
     print("---------------- i'm done here ----------------")
 k = input("Press Enter to exit")
