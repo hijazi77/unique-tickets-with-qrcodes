@@ -11,7 +11,7 @@ import json
 from tqdm import tqdm
 
 list = []
-base_url = 'https://spotevents.co/'
+base_url = 'https://spotevents.co/pb/'
 #base_url = "http://localhost:3000/"
 
 # to get the time
@@ -80,7 +80,7 @@ def chooseImage():
 
 
 def get_events():
-    r = requests.get(f"{base_url}pb/api/collections/events/records")
+    r = requests.get(f"{base_url}api/collections/events/records")
     print(r.json().get("items"))
     return r.json().get("items")
 
@@ -157,10 +157,10 @@ event = events[int(event) - 1]
 print(f"you choosed {event['name']} event")
 print("--------------------------------------------------")
 print(f"qr coordination: {event['qr']}") if event["qr"] != None else print(
-    "qr data: coordination"
+    "qr coordination: empty"
 )
 print("text coordination: " + event["text"]) if event["text"] != None else print(
-    "text data: coordination"
+    "text coordination: empty"
 )
 # ask user if he wants to change the event data
 change_event = input("Do you want to change the event coordination (Y/N): ")
@@ -172,10 +172,10 @@ if change_event.upper() == "Y":
 else:
     change_event = False
 qr_data = (
-    json.loads(event["qr"]) if change_event == False and event["qr"] != None else {}
+    event["qr"] if change_event == False and event["qr"] != None else {}
 )
 text_data = (
-    json.loads(event["text"]) if change_event == False and event["text"] != None else {}
+    event["text"] if change_event == False and event["text"] != None else {}
 )
 types = [key for key in event["price"].keys()]
 
@@ -309,10 +309,10 @@ if server_sent.upper() == "N":
 else:
     print("---------------- i'm sending the data to the server ----------------")
     # ask user if he wants to update the event data
-    update_event = input("Do you want to update the event data (Y/N): ")
+    update_event = input("Do you want to update the event coordination (Y/N): ")
     while update_event == "" or update_event.upper() not in ["Y", "N"]:
         error("This is not a valid answer")
-        update_event = input("Do you want to update the event data (Y/N): ")
+        update_event = input("Do you want to update the event coordination (Y/N): ")
     if update_event.upper() == "Y":
         if "ticket_needed" in text_data:
             del text_data["ticket_needed"]
@@ -325,8 +325,8 @@ else:
         headers = {
             "Content-Type": "application/json",
         }
-        update = requests.post(
-            f"{base_url}api/event/update/{event['id']}", json=payload, headers=headers
+        update = requests.patch(
+            f"{base_url}/api/collections/events/records/{event['id']}", json=payload, headers=headers
         )
         try:
             print(update.json())
