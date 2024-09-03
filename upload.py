@@ -1,38 +1,22 @@
-import asyncio
-from pocketbase import PocketBase
+base_url = "https://spotevents.co/pb/"
 
-client = PocketBase('http://127.0.0.1:8090')
+def uploadOneTicket(ticket):
+    print(f"Uploading ticket: {ticket}")
+    payload = ticket
+    response =  requests.post(f"{base_url}api/collections/tickets/records", json=payload) 
+    print(response,"response")
+    #check if the ticket was uploaded successfully
+    if response:
+        print("Ticket uploaded successfully")
+        return {"ticket": ticket, "success": True}
+    else:
+        print(f"Failed to upload ticket: {response.status}")
+        return {"ticket": ticket, "status": False}
 
-async def create_multiple_records(records):
+
+def upload_tickets(list):
     tasks = []
-    for record in records:
-        task = client.collection("your_collection").create(record)
-        tasks.append(task)
-    
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    successful_creations = []
-    failed_creations = []
-    
-    for i, result in enumerate(results):
-        if isinstance(result, Exception):
-            print(f"Failed to create record {i+1}: {result}")
-            failed_creations.append((records[i], result))
-        else:
-            successful_creations.append(result)
-    
-    return successful_creations, failed_creations
-
-async def main():
-    records_to_create = [
-        {'field1': 'value1', 'field2': 'value2'},
-        {'field1': 'value3', 'field2': 'value4'},
-        # ... more records ...
-    ]
-    
-    successful, failed = await create_multiple_records(records_to_create)
-    
-    print(f"Successfully created {len(successful)} records")
-    print(f"Failed to create {len(failed)} records")
-
-asyncio.run(main())
+    for ticket in list:
+        res = uploadOneTicket(ticket)
+        if(res.status==False):
+            tasks.append(res)

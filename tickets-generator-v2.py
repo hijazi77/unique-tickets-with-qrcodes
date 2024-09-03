@@ -1,4 +1,3 @@
-import asyncio
 import os
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
@@ -9,7 +8,7 @@ from datetime import datetime
 import requests
 import time
 from tqdm import tqdm
-import aiohttp
+from upload import  upload_tickets
 
 list = []
 base_url = "https://spotevents.co/pb/"
@@ -301,38 +300,13 @@ ws["B" + str(1)].value = "code"
 ws["C" + str(1)].value = "Type"
 
 create_folder(dt_string)
-wb.save(f"{dt_string}/{dt_string}.xlsx")
+wb.save(f"{dt_string}/{dt_string}.xlsx")    
 
-
-
-def uploadOneTicket(ticket):
-    print(f"Uploading ticket: {ticket}")
-    payload = ticket
-    response =  requests.post(f"{base_url}api/collections/tickets/records", json=payload) 
-    print(response,"response")
-    #check if the ticket was uploaded successfully
-    if response:
-        print("Ticket uploaded successfully")
-        return {"ticket": ticket, "success": True}
-    else:
-        print(f"Failed to upload ticket: {response.status}")
-        return {"ticket": ticket, "status": False}
-
-
-def upload_tickets():
-    tasks = []
-    for ticket in list:
-        res = uploadOneTicket(ticket)
-        if(res.status==False):
-            tasks.append(res)
-            
-
-    # tasks = [uploadOneTicket(ticket) for ticket in list]
 
 if server_sent.upper() == "N":
     print("---------------- i'm done here ----------------")
 else:
-    upload_tickets()
+    upload_tickets(list)
     print("---------------- i'm sending the data to the server ----------------")
     # ask user if he wants to update the event data
     update_event = input("Do you want to update the event coordination (Y/N): ")
