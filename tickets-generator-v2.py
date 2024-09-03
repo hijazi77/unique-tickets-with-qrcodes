@@ -9,6 +9,11 @@ import requests
 import time
 from tqdm import tqdm
 from upload import  upload_tickets
+from autoupdate import check_for_updates
+
+check_for_updates()
+
+
 
 list = []
 base_url = "https://spotevents.co/pb/"
