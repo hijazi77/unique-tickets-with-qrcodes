@@ -12,9 +12,6 @@ from upload import  upload_tickets
 
 list = []
 base_url = "https://spotevents.co/pb/"
-# base_url = "http://localhost:3000/"
-
-# to get the time
 
 
 def get_time():
@@ -273,6 +270,7 @@ def generate():
                 "type": types[int(type) - 1],
                 "price": event["price"][types[int(type) - 1]],
                 "event": event["id"],
+                "rowNumber": i + 2,
             }
         )
         ws["A" + str(i + 2)].value = i + 1
@@ -286,6 +284,7 @@ def create_folder(folder_name):
     currentDirectory = os.getcwd()
     if not os.path.exists(folder_name):
         os.mkdir(currentDirectory + f"\\{folder_name}")
+        print(f"folder {currentDirectory} [{folder_name}] is created successfully")
         generate()
     else:
         print(
@@ -298,16 +297,18 @@ fontcode = ImageFont.truetype("arial.ttf", size=int(text["size"]))
 ws["A" + str(1)].value = "TicketNmber"
 ws["B" + str(1)].value = "code"
 ws["C" + str(1)].value = "Type"
+ws["D" + str(1)].value = "Uploaded?"
 
 create_folder(dt_string)
+xlsx_path = f"{dt_string}/{dt_string}.xlsx"
 wb.save(f"{dt_string}/{dt_string}.xlsx")    
 
 
 if server_sent.upper() == "N":
     print("---------------- i'm done here ----------------")
 else:
-    upload_tickets(list)
     print("---------------- i'm sending the data to the server ----------------")
+    upload_tickets(list,xlsx_path)
     # ask user if he wants to update the event data
     update_event = input("Do you want to update the event coordination (Y/N): ")
     while update_event == "" or update_event.upper() not in ["Y", "N"]:
@@ -335,11 +336,5 @@ else:
         except Exception:
             print("error has been happend")
             print(update.text)
-
-    # try:
-    #     print(r.json())
-    # except Exception:
-    #     print("error has been happend")
-    #     print(r.text)
     print("---------------- i'm done here ----------------")
 k = input("Press Enter to exit")
