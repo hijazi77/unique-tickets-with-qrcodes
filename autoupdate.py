@@ -1,10 +1,9 @@
 import json
 import os
 import requests
-import shutil
-
+from colorama import init, Fore, Style
 from tqdm import tqdm
-
+init(autoreset=True)
 base_url = "https://spotevents.co/pb/"
 version_url = base_url + "api/collections/versions/records"
 
@@ -31,11 +30,11 @@ def check_version():
                 return current_version
             except json.JSONDecodeError:
                 create_config()
-                print("Invalid JSON in config file. Using default version '1.0.0'.")
+                print(Fore.RED +"Invalid JSON in config file. Using default version '1.0.0'."+Style.RESET_ALL)
                 return "1.0.0"
     except FileNotFoundError:
         create_config()
-        print("Config file not found. Using default version '1.0.0'.")
+        print(Fore.RED+ "Config file not found. Using default version '1.0.0'."+Style.RESET_ALL)
         return "1.0.0"
 
 
@@ -50,26 +49,11 @@ def get_latest_exe():
     return url
 
 
-def download_latest_exe(latest_version, download_url):
-    print(f"New version available: {latest_version}. Updating...")
-    # Download the latest version
-    download_response = requests.get(download_url, stream=True)
-    download_response.raise_for_status()
-
-    # Save the downloaded file to a temporary location
-    temp_file_path = "temp_new_version.exe"  # Adjust extension as needed
-    with open(temp_file_path, "wb") as file:
-        shutil.copyfileobj(download_response.raw, file)
-
-    # Replace the old executable with the new one
-    current_executable = os.path.basename(__file__)  # Current running script
-    os.rename(
-        current_executable, f"{current_executable}.bak"
-    )  # Backup current executable
-    os.rename(temp_file_path, current_executable)  # Replace with new version
 
 def download_latest_exe2(latest_version, download_url):
-    print(f"New version available: {latest_version}.")
+    print(Fore.GREEN+ f"New version available: {latest_version}."+Style.RESET_ALL)
+    print(Fore.YELLOW+"please wait while we download the latest version Dont close the application"+ Style.RESET_ALL)
+    print(Fore.RED+"PLEASE DON'T CLOSE THE APPLICATION"+ Style.RESET_ALL)
 
     # Download the latest version with a progress bar
     with requests.get(download_url, stream=True) as download_response:
@@ -95,6 +79,10 @@ def download_latest_exe2(latest_version, download_url):
         current_executable, f"{current_executable}.bak"
     )  # Backup current executable
     os.rename(temp_file_path, current_executable)  # Replace with new version
+    #remove the temp file
+    os.remove(f"{current_executable}.bak")
+    os.remove(f"{temp_file_path}")
+
 
 def check_for_updates():
     """
@@ -115,11 +103,11 @@ def check_for_updates():
         # Compare versions
         if latest_version != current_version:
             download_latest_exe2(latest_version, download_url)
-            print("Update successful. Please restart the application.")
+            print(Fore.GREEN+"Update successful. Please restart the application."+Style.RESET_ALL)
         else:
-            print("You are running the latest version.")
+            print(Fore.BLUE+"You are running the latest version."+Style.RESET_ALL)
 
 
     except requests.RequestException as e:
-        print(f"Error checking for updates: {e}")
+        print(Fore.RED +f"Error checking for updates: {e}"+Style.RESET_ALL)
 
